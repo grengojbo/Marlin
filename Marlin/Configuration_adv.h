@@ -48,6 +48,12 @@
   #undef TEMP_SENSOR_BED
   #define TEMP_SENSOR_BED 70
   #define HEATER_BED_INVERTING true
+//  #define HEATER_0_INVERTING true
+//  За одно и остальные что б не светились лампочки.
+//  #define HEATER_1_INVERTING true
+//  #define HEATER_2_INVERTING true
+//  И что б вентилятор на втором контакте включался при температуре выше 50.
+//  #define E0_AUTO_FAN_PIN 2
 #endif
 
 #if DISABLED(PIDTEMPBED)

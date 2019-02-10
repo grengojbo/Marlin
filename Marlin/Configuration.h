@@ -73,7 +73,7 @@
 // User-specified version info of this build to display in [Pronterface, etc] terminal window during
 // startup. Implementation of an idea by Prof Braino to inform user that any changes made to this
 // build by the user have been successfully uploaded into firmware.
-#define STRING_CONFIG_H_AUTHOR "(none, default config)" // Who made the changes.
+#define STRING_CONFIG_H_AUTHOR "(none, RAMPS-FD config)" // Who made the changes.
 #define SHOW_BOOTSCREEN
 #define STRING_SPLASH_LINE1 SHORT_BUILD_VERSION // will be shown during bootup in line 1
 #define STRING_SPLASH_LINE2 WEBSITE_URL         // will be shown during bootup in line 2
@@ -123,7 +123,12 @@
  * You may try up to 1000000 to speed up SD file transfer.
  *
  * :[2400, 9600, 19200, 38400, 57600, 115200, 250000, 500000, 1000000]
+ *
+ * Настройка скорости передачи данных
+ * и установите скорость 250000. Обычно принтеры использую эту скорость, однако её можно изменить на 115200 бод/с
+ * или другую, поддерживаемую вашей программой на компьютере.
  */
+
 #define BAUDRATE 250000
 
 // Enable the Bluetooth serial interface on AT90USB devices
@@ -132,7 +137,7 @@
 // The following define selects which electronics board you have.
 // Please choose the name from boards.h that matches your setup
 #ifndef MOTHERBOARD
-  #define MOTHERBOARD BOARD_RAMPS_14_EFB
+  #define MOTHERBOARD BOARD_RAMPS_FD_V1
 #endif
 
 // Optional custom name for your RepStrap or other custom machine
@@ -166,13 +171,13 @@
  * Additional options to configure custom E moves are pending.
  */
 //#define MK2_MULTIPLEXER
-#if ENABLED(MK2_MULTIPLEXER)
-  // Override the default DIO selector pins here, if needed.
-  // Some pins files may provide defaults for these pins.
-  //#define E_MUX0_PIN 40  // Always Required
-  //#define E_MUX1_PIN 42  // Needed for 3 to 8 inputs
-  //#define E_MUX2_PIN 44  // Needed for 5 to 8 inputs
-#endif
+// #if ENABLED(MK2_MULTIPLEXER)
+//   // Override the default DIO selector pins here, if needed.
+//   // Some pins files may provide defaults for these pins.
+//   //#define E_MUX0_PIN 40  // Always Required
+//   //#define E_MUX1_PIN 42  // Needed for 3 to 8 inputs
+//   //#define E_MUX2_PIN 44  // Needed for 5 to 8 inputs
+// #endif
 
 /**
  * Prusa Multi-Material Unit v2
@@ -363,14 +368,21 @@
  *   999 : Dummy Table that ALWAYS reads 100°C or the temperature defined below.
  *
  * :{ '0': "Not used", '1':"100k / 4.7k - EPCOS", '2':"200k / 4.7k - ATC Semitec 204GT-2", '3':"Mendel-parts / 4.7k", '4':"10k !! do not use for a hotend. Bad resolution at high temp. !!", '5':"100K / 4.7k - ATC Semitec 104GT-2 (Used in ParCan & J-Head)", '501':"100K Zonestar (Tronxy X3A)", '6':"100k / 4.7k EPCOS - Not as accurate as Table 1", '7':"100k / 4.7k Honeywell 135-104LAG-J01", '8':"100k / 4.7k 0603 SMD Vishay NTCS0603E3104FXT", '9':"100k / 4.7k GE Sensing AL03006-58.2K-97-G1", '10':"100k / 4.7k RS 198-961", '11':"100k / 4.7k beta 3950 1%", '12':"100k / 4.7k 0603 SMD Vishay NTCS0603E3104FXT (calibrated for Makibox hot bed)", '13':"100k Hisens 3950  1% up to 300°C for hotend 'Simple ONE ' & hotend 'All In ONE'", '20':"PT100 (Ultimainboard V2.x)", '51':"100k / 1k - EPCOS", '52':"200k / 1k - ATC Semitec 204GT-2", '55':"100k / 1k - ATC Semitec 104GT-2 (Used in ParCan & J-Head)", '60':"100k Maker's Tool Works Kapton Bed Thermistor beta=3950", '61':"100k Formbot / Vivedino 3950 350C thermistor 4.7k pullup", '66':"Dyze Design 4.7M High Temperature thermistor", '70':"the 100K thermistor found in the bq Hephestos 2", '71':"100k / 4.7k Honeywell 135-104LAF-J01", '147':"Pt100 / 4.7k", '1047':"Pt1000 / 4.7k", '110':"Pt100 / 1k (non-standard)", '1010':"Pt1000 / 1k (non standard)", '-4':"Thermocouple + AD8495", '-3':"Thermocouple + MAX31855 (only for sensor 0)", '-2':"Thermocouple + MAX6675 (only for sensor 0)", '-1':"Thermocouple + AD595",'998':"Dummy 1", '999':"Dummy 2" }
+ * 
+ * TEMP_SENSOR_0 соответствует датчику температуры первого экструдера, 
+ * а TEMP_SENSOR_BED - датчику температуры стола. Если один из датчиков не используется, 
+ * установите значение его номера в ноль.
  */
-#define TEMP_SENSOR_0 1
+// отвечает за термистор первого экструдера
+#define TEMP_SENSOR_0 5
+// отвечает за термистор второго экструдера
 #define TEMP_SENSOR_1 0
 #define TEMP_SENSOR_2 0
 #define TEMP_SENSOR_3 0
 #define TEMP_SENSOR_4 0
 #define TEMP_SENSOR_5 0
-#define TEMP_SENSOR_BED 0
+// отвечает за термистор стола
+#define TEMP_SENSOR_BED 1
 #define TEMP_SENSOR_CHAMBER 0
 
 // Dummy thermistor constant temperature readings, for use with 998 and 999
@@ -406,12 +418,29 @@
 // When temperature exceeds max temp, your heater will be switched off.
 // This feature exists to protect your hotend from overheating accidentally, but *NOT* from thermistor short/failure!
 // You should use MINTEMP for thermistor short/failure protection.
-#define HEATER_0_MAXTEMP 275
-#define HEATER_1_MAXTEMP 275
-#define HEATER_2_MAXTEMP 275
-#define HEATER_3_MAXTEMP 275
-#define HEATER_4_MAXTEMP 275
-#define HEATER_5_MAXTEMP 275
+// Ограничение максимальной температуры
+// #define HEATER_0_MAXTEMP 275
+// #define HEATER_1_MAXTEMP 275
+// #define HEATER_2_MAXTEMP 275
+// #define HEATER_3_MAXTEMP 275
+// #define HEATER_4_MAXTEMP 275
+// #define HEATER_5_MAXTEMP 275
+// // #define BED_MAXTEMP 150
+// #define BED_MAXTEMP 170
+// Если вы используете хотенд с тефлоном внутри, то рекомендуем ограничить температурой 260 градусов.
+// А ДРУГИЕ
+// В зависимости от материала, которым вы печатаете, значение максимальной температуры для экструдера
+// и подогрева стола может отличаться. Это значение не даёт перегреваться экструдеру и столу сверх 
+// необходимого. Оно также зависит от термической стойкости частей экструдера. 
+// Например, экструдер типа J-head имеет фторопластовую трубку внутри для направления пластиковой нити, 
+// которая может быть повреждена при нагреве до 240°C. Чтобы этого не случилось, укажем максимальное 
+// значение в 230 градусов для экструдера и 120°C для стола
+#define HEATER_0_MAXTEMP 260
+#define HEATER_1_MAXTEMP 260
+#define HEATER_2_MAXTEMP 260
+#define HEATER_3_MAXTEMP 260
+#define HEATER_4_MAXTEMP 260
+#define HEATER_5_MAXTEMP 260
 #define BED_MAXTEMP 150
 
 //===========================================================================
@@ -509,13 +538,21 @@
  * cold extrusion prevention on and off.
  *
  * *** IT IS HIGHLY RECOMMENDED TO LEAVE THIS OPTION ENABLED! ***
+ * 
+ * Для того, чтобы исключить механическое повреждения нашего принтера отключим выдавливание 
+ * материала когда он недостаточно нагрет (температура экструдера ниже температуры плавления материала):
+ * Эту функцию при необходимости можно отключить командой M302 из вашей программы.
  */
 #define PREVENT_COLD_EXTRUSION
+// Минимальная температура экструдера определяется строкой
 #define EXTRUDE_MINTEMP 170
 
 /**
  * Prevent a single extrusion longer than EXTRUDE_MAXLENGTH.
  * Note: For Bowden Extruders make this large enough to allow load/unload.
+ * 
+ * Слишком длительное выдавливание можно отключить опцией
+ * Это полезно при необходимости быстрой отмены печати при ошибке.
  */
 #define PREVENT_LENGTHY_EXTRUDE
 #define EXTRUDE_MAXLENGTH 200
@@ -548,7 +585,7 @@
 
 // Uncomment one of these options to enable CoreXY, CoreXZ, or CoreYZ kinematics
 // either in the usual order or reversed
-//#define COREXY
+#define COREXY
 //#define COREXZ
 //#define COREYZ
 //#define COREYX
@@ -598,11 +635,14 @@
 #endif
 
 // Mechanical endstop with COM to ground and NC to Signal uses "false" here (most common setup).
-#define X_MIN_ENDSTOP_INVERTING false // set to true to invert the logic of the endstop.
-#define Y_MIN_ENDSTOP_INVERTING false // set to true to invert the logic of the endstop.
+// Если у вас механические концевики, то при срабатывание цепь замыкается, напротив каждой строчки 
+// соответствующей оси поставьте значения  "true". Если вы используете оптические концевики, то при 
+// срабатывании цепь размыкается, напротив каждой строчки соответствующей оси поставьте значения  "false".
+#define X_MIN_ENDSTOP_INVERTING true // set to true to invert the logic of the endstop.
+#define Y_MIN_ENDSTOP_INVERTING true // set to true to invert the logic of the endstop.
 #define Z_MIN_ENDSTOP_INVERTING false // set to true to invert the logic of the endstop.
-#define X_MAX_ENDSTOP_INVERTING false // set to true to invert the logic of the endstop.
-#define Y_MAX_ENDSTOP_INVERTING false // set to true to invert the logic of the endstop.
+#define X_MAX_ENDSTOP_INVERTING true // set to true to invert the logic of the endstop.
+#define Y_MAX_ENDSTOP_INVERTING true // set to true to invert the logic of the endstop.
 #define Z_MAX_ENDSTOP_INVERTING false // set to true to invert the logic of the endstop.
 #define Z_MIN_PROBE_ENDSTOP_INVERTING false // set to true to invert the logic of the probe.
 
@@ -621,14 +661,14 @@
  *          TMC5160, TMC5160_STANDALONE
  * :['A4988', 'A5984', 'DRV8825', 'LV8729', 'L6470', 'TB6560', 'TB6600', 'TMC2100', 'TMC2130', 'TMC2130_STANDALONE', 'TMC2160', 'TMC2160_STANDALONE', 'TMC2208', 'TMC2208_STANDALONE', 'TMC26X', 'TMC26X_STANDALONE', 'TMC2660', 'TMC2660_STANDALONE', 'TMC5130', 'TMC5130_STANDALONE', 'TMC5160', 'TMC5160_STANDALONE']
  */
-//#define X_DRIVER_TYPE  A4988
-//#define Y_DRIVER_TYPE  A4988
-//#define Z_DRIVER_TYPE  A4988
+#define X_DRIVER_TYPE  DRV8825
+#define Y_DRIVER_TYPE  DRV8825
+#define Z_DRIVER_TYPE  DRV8825
 //#define X2_DRIVER_TYPE A4988
 //#define Y2_DRIVER_TYPE A4988
 //#define Z2_DRIVER_TYPE A4988
 //#define Z3_DRIVER_TYPE A4988
-//#define E0_DRIVER_TYPE A4988
+#define E0_DRIVER_TYPE DRV8825
 //#define E1_DRIVER_TYPE A4988
 //#define E2_DRIVER_TYPE A4988
 //#define E3_DRIVER_TYPE A4988
@@ -686,6 +726,8 @@
  *                                      X, Y, Z, E0 [, E1[, E2[, E3[, E4[, E5]]]]]
  */
 #define DEFAULT_MAX_FEEDRATE          { 300, 300, 5, 25 }
+//Скорость пусть побольше будет и ускорения, должна же DUE думать быстрее.
+//#define DEFAULT_MAX_FEEDRATE          { 300, 300, 250, 100 }
 
 /**
  * Default Max Acceleration (change/s) change = mm/s
@@ -694,6 +736,8 @@
  *                                      X, Y, Z, E0 [, E1[, E2[, E3[, E4[, E5]]]]]
  */
 #define DEFAULT_MAX_ACCELERATION      { 3000, 3000, 100, 10000 }
+//#define DEFAULT_MAX_ACCELERATION { 5000, 5000, 5000, 2500 }
+
 
 /**
  * Default Acceleration (change/s) change = mm/s
@@ -864,7 +908,9 @@
 #define Z_PROBE_SPEED_FAST HOMING_FEEDRATE_Z
 
 // Feedrate (mm/m) for the "accurate" probe of each point
-#define Z_PROBE_SPEED_SLOW (Z_PROBE_SPEED_FAST / 2)
+//#define Z_PROBE_SPEED_SLOW (Z_PROBE_SPEED_FAST / 2)
+//За одно пусть медленнее калибруется
+#define Z_PROBE_SPEED_SLOW (Z_PROBE_SPEED_FAST) / 10
 
 // The number of probes to perform at each point.
 //   Set to 2 for a fast/slow probe, using the second probe result.
@@ -966,6 +1012,8 @@
 
 // Direction of endstops when homing; 1=MAX, -1=MIN
 // :[-1,1]
+// Направление движения в нулевую точку
+// Это направление движения экструдера когда вы нажимаете кнопку начальной координаты ("home", "дом")
 #define X_HOME_DIR -1
 #define Y_HOME_DIR -1
 #define Z_HOME_DIR -1
@@ -977,6 +1025,10 @@
 #define Y_BED_SIZE 200
 
 // Travel limits (mm) after homing, corresponding to endstop positions.
+// Размеры рабочей области принтера
+// Здесь мы можем указать программе пределы перемещения экструдера. 
+// Лучше указать чуть меньшее перемещение чем допускается механикой, а позже, 
+// после проверки работы принтера, установить максимально возможные значения
 #define X_MIN_POS 0
 #define Y_MIN_POS 0
 #define Z_MIN_POS 0
@@ -1095,6 +1147,7 @@
  */
 //#define AUTO_BED_LEVELING_3POINT
 //#define AUTO_BED_LEVELING_LINEAR
+// Почему то была закрыта строка ???
 //#define AUTO_BED_LEVELING_BILINEAR
 //#define AUTO_BED_LEVELING_UBL
 //#define MESH_BED_LEVELING
@@ -1271,6 +1324,9 @@
 #endif
 
 // Homing speeds (mm/m)
+// Скорость перемещения к началу координат ("дому")
+// Скорость перемещения экструдера к началу координат обозначается в мм/мин, для каждой оси отдельно. 
+// В других местах нашего файла настроек скорость перемещения указывается в мм/с, а ускорение - в мм/с2
 #define HOMING_FEEDRATE_XY (50*60)
 #define HOMING_FEEDRATE_Z  (4*60)
 
@@ -1975,7 +2031,7 @@
 // @section extras
 
 // Increase the FAN PWM frequency. Removes the PWM noise but increases heating in the FET/Arduino
-//#define FAST_PWM_FAN
+#define FAST_PWM_FAN
 
 // Use software PWM to drive the fan, as for the heaters. This uses a very low frequency
 // which is not as annoying as with the hardware PWM. On the other hand, if this frequency
