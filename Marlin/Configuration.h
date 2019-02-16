@@ -142,7 +142,7 @@
 
 // Optional custom name for your RepStrap or other custom machine
 // Displayed in the LCD "Ready" message
-//#define CUSTOM_MACHINE_NAME "3D Printer"
+#define CUSTOM_MACHINE_NAME "Bbox 3D Printer"
 
 // Define this to set a unique identifier for this printer, (Used by some programs to differentiate between machines)
 // You can use an online service to generate a random UUID. (eg http://www.uuidgenerator.net/version4)
@@ -155,7 +155,8 @@
 #define EXTRUDERS 1
 
 // Generally expected filament diameter (1.75, 2.85, 3.0, ...). Used for Volumetric, Filament Width Sensor, etc.
-#define DEFAULT_NOMINAL_FILAMENT_DIA 3.0
+//диаметр филамента "по умолчанию" установлен 1.75 мм
+#define DEFAULT_NOMINAL_FILAMENT_DIA 1.75
 
 // For Cyclops or any "multi-extruder" that shares a single nozzle.
 //#define SINGLENOZZLE
@@ -171,13 +172,13 @@
  * Additional options to configure custom E moves are pending.
  */
 //#define MK2_MULTIPLEXER
-// #if ENABLED(MK2_MULTIPLEXER)
-//   // Override the default DIO selector pins here, if needed.
-//   // Some pins files may provide defaults for these pins.
-//   //#define E_MUX0_PIN 40  // Always Required
-//   //#define E_MUX1_PIN 42  // Needed for 3 to 8 inputs
-//   //#define E_MUX2_PIN 44  // Needed for 5 to 8 inputs
-// #endif
+#if ENABLED(MK2_MULTIPLEXER)
+  // Override the default DIO selector pins here, if needed.
+  // Some pins files may provide defaults for these pins.
+  //#define E_MUX0_PIN 40  // Always Required
+  //#define E_MUX1_PIN 42  // Needed for 3 to 8 inputs
+  //#define E_MUX2_PIN 44  // Needed for 5 to 8 inputs
+#endif
 
 /**
  * Prusa Multi-Material Unit v2
@@ -295,13 +296,14 @@
  * 2 = X-Box 360 203Watts (the blue wire connected to PS_ON and the red wire to VCC)
  *
  * :{ 0:'No power switch', 1:'ATX', 2:'X-Box 360' }
+ * изменение этого параметра позволяет управлять питанием принтера, в задачи настоящей статьи не входит
  */
 #define POWER_SUPPLY 0
 
 #if POWER_SUPPLY > 0
   // Enable this option to leave the PSU off at startup.
   // Power to steppers and heaters will need to be turned on with M80.
-  //#define PS_DEFAULT_OFF
+  // #define PS_DEFAULT_OFF
 
   //#define AUTO_POWER_CONTROL        // Enable automatic control of the PS_ON pin
   #if ENABLED(AUTO_POWER_CONTROL)
@@ -543,9 +545,10 @@
  * материала когда он недостаточно нагрет (температура экструдера ниже температуры плавления материала):
  * Эту функцию при необходимости можно отключить командой M302 из вашей программы.
  */
-#define PREVENT_COLD_EXTRUSION
+// #define PREVENT_COLD_EXTRUSION
 // Минимальная температура экструдера определяется строкой
-#define EXTRUDE_MINTEMP 170
+#define EXTRUDE_MINTEMP 5
+// #define EXTRUDE_MINTEMP 170
 
 /**
  * Prevent a single extrusion longer than EXTRUDE_MAXLENGTH.
@@ -604,9 +607,9 @@
 #define USE_XMIN_PLUG
 #define USE_YMIN_PLUG
 #define USE_ZMIN_PLUG
-//#define USE_XMAX_PLUG
-//#define USE_YMAX_PLUG
-//#define USE_ZMAX_PLUG
+#define USE_XMAX_PLUG
+#define USE_YMAX_PLUG
+#define USE_ZMAX_PLUG
 
 // Enable pullup for all endstops to prevent a floating state
 #define ENDSTOPPULLUPS
@@ -717,17 +720,37 @@
  * Default Axis Steps Per Unit (steps/mm)
  * Override with M92
  *                                      X, Y, Z, E0 [, E1[, E2[, E3[, E4[, E5]]]]]
+ * - для зубчатых ремней. Если у вас зубчатый шкив Gt2 с шагом 2 мм и с количеством зубьев 20, то формула такая:
+ *   число_шагов_на_мм = (число_шагов_двигателя_на_оборот * микрошаг_драйвера) / (шаг_ремня * число_зубьев_на_шкиве)
+ * 
+ * - для винтовых передач. По оси Z могут стоять:
+ *    Шпилька М8 с шагом резьбы 1,25 мм, тогда формула: 200*16/1.25=2560
+ *    Шпилька M5 с шагом резьбы 0.8 мм, тогда формула: 200*16/0.8=4000
+ *    Трапецеидальный винт диаметром 8 мм с шагом 1 мм  и заходностью 1, тогда формула: 200*16/1=3200
+ *    Трапецеидальный винт диаметром 8 мм с шагом 2 мм  и заходностью 1, тогда формула: 200*16/2=1600
+ *    Трапецеидальный винт диаметром 8 мм с шагом 2 мм  и заходностью 4, тогда формула: 200*16/2*4=400
+ *    В Pruse i3 Steel используются шпильки М5 , тогда получается число 4000.
+ *    Заходность резьбы легко определить с торца винта по числу сбегающих витков. Все крепежные резьбы однозаходные. 
+ *    Многозаходные резьбы применяют преимущественно в винтовых механизмах. Число заходов больше трех применяется редко.
+ *    Как померить шаг винта? Замеряем участок винта и считаем на нём витки, 
+ *    затем длину участка в миллиметрах делим на количество витков 20/16=1.25 мм. 
+ *    Для более точного результата замеряем максимальный участок винта.
+ *   число_шагов_на_мм = (число_шагов_двигателя_на_оборот * микрошаг_драйвера) / шаг_винта
+ * 
+ * - для экструдера с прямым приводом:
+ *   число_шагов_на_мм = (число_шагов_двигателя_на_оборот * микрошаг_драйвера) / (диаметр_сопла * 3,1415)
+ * 
+ * - для экструдера с шестерёнчатой передачей:
+ *   число_шагов_на_мм = (число_шагов_двигателя_на_оборот * микрошаг_драйвера) * передаточное_число_зубчатой_передачи/ (диаметр_сопла * 3,1415)
  */
-#define DEFAULT_AXIS_STEPS_PER_UNIT   { 80, 80, 4000, 500 }
+#define DEFAULT_AXIS_STEPS_PER_UNIT   { (200*32)/(2*20), (200*32)/(2.0*20), (200*32)/8, (200*32)/(11*3.1415) }
 
 /**
  * Default Max Feed Rate (mm/s)
  * Override with M203
  *                                      X, Y, Z, E0 [, E1[, E2[, E3[, E4[, E5]]]]]
  */
-#define DEFAULT_MAX_FEEDRATE          { 300, 300, 5, 25 }
-//Скорость пусть побольше будет и ускорения, должна же DUE думать быстрее.
-//#define DEFAULT_MAX_FEEDRATE          { 300, 300, 250, 100 }
+#define DEFAULT_MAX_FEEDRATE          { 150, 150, 10, 25 }
 
 /**
  * Default Max Acceleration (change/s) change = mm/s
@@ -1046,15 +1069,15 @@
  */
 
 // Min software endstops constrain movement within minimum coordinate bounds
-#define MIN_SOFTWARE_ENDSTOPS
+//#define MIN_SOFTWARE_ENDSTOPS
 #if ENABLED(MIN_SOFTWARE_ENDSTOPS)
   #define MIN_SOFTWARE_ENDSTOP_X
   #define MIN_SOFTWARE_ENDSTOP_Y
   #define MIN_SOFTWARE_ENDSTOP_Z
 #endif
 
-// Max software endstops constrain movement within maximum coordinate bounds
-#define MAX_SOFTWARE_ENDSTOPS
+// Max software endstops curtail movement above maximum coordinate bounds
+//#define MAX_SOFTWARE_ENDSTOPS
 #if ENABLED(MAX_SOFTWARE_ENDSTOPS)
   #define MAX_SOFTWARE_ENDSTOP_X
   #define MAX_SOFTWARE_ENDSTOP_Y
@@ -1281,7 +1304,7 @@
 #endif
 
 // Add a menu item to move between bed corners for manual bed adjustment
-//#define LEVEL_BED_CORNERS
+#define LEVEL_BED_CORNERS
 
 #if ENABLED(LEVEL_BED_CORNERS)
   #define LEVEL_CORNERS_INSET 30    // (mm) An inset for corner leveling
@@ -1316,7 +1339,7 @@
 // - Move the Z probe (or nozzle) to a defined XY point before Z Homing when homing all axes (G28).
 // - Prevent Z homing when the Z probe is outside bed area.
 //
-//#define Z_SAFE_HOMING
+#define Z_SAFE_HOMING
 
 #if ENABLED(Z_SAFE_HOMING)
   #define Z_SAFE_HOMING_X_POINT ((X_BED_SIZE) / 2)    // X point for Z homing when homing all axes (G28).
@@ -1439,12 +1462,12 @@
 #define PREHEAT_1_LABEL       "PLA"
 #define PREHEAT_1_TEMP_HOTEND 180
 #define PREHEAT_1_TEMP_BED     70
-#define PREHEAT_1_FAN_SPEED     0 // Value from 0 to 255
+#define PREHEAT_1_FAN_SPEED   255 // Value from 0 to 255
 
 #define PREHEAT_2_LABEL       "ABS"
 #define PREHEAT_2_TEMP_HOTEND 240
 #define PREHEAT_2_TEMP_BED    110
-#define PREHEAT_2_FAN_SPEED     0 // Value from 0 to 255
+#define PREHEAT_2_FAN_SPEED   255 // Value from 0 to 255
 
 /**
  * Nozzle Park
@@ -1575,7 +1598,7 @@
  *
  * :{ 'en':'English', 'an':'Aragonese', 'bg':'Bulgarian', 'ca':'Catalan', 'cz':'Czech', 'da':'Danish', 'de':'German', 'el':'Greek', 'el-gr':'Greek (Greece)', 'es':'Spanish', 'eu':'Basque-Euskera', 'fi':'Finnish', 'fr':'French', 'gl':'Galician', 'hr':'Croatian', 'it':'Italian', 'jp-kana':'Japanese', 'ko_KR':'Korean (South Korea)', 'nl':'Dutch', 'pl':'Polish', 'pt':'Portuguese', 'pt-br':'Portuguese (Brazilian)', 'ru':'Russian', 'sk':'Slovak', 'tr':'Turkish', 'uk':'Ukrainian', 'zh_CN':'Chinese (Simplified)', 'zh_TW':'Chinese (Traditional)', 'test':'TEST' }
  */
-#define LCD_LANGUAGE en
+#define LCD_LANGUAGE ru
 
 /**
  * LCD Character Set
@@ -2031,7 +2054,8 @@
 // @section extras
 
 // Increase the FAN PWM frequency. Removes the PWM noise but increases heating in the FET/Arduino
-#define FAST_PWM_FAN
+// FAST_PWM_FAN only supported by 8 bit CPU
+// #define FAST_PWM_FAN
 
 // Use software PWM to drive the fan, as for the heaters. This uses a very low frequency
 // which is not as annoying as with the hardware PWM. On the other hand, if this frequency
