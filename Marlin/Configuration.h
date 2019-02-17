@@ -379,11 +379,13 @@
  * а TEMP_SENSOR_BED - датчику температуры стола. Если один из датчиков не используется, 
  * установите значение его номера в ноль.
  */
-// отвечает за термистор первого экструдера
+// pins_RAMPS_FD_V1.h смотреть #define TEMP_0_PIN на какой пин подключен
 #define TEMP_SENSOR_0 5
-// отвечает за термистор второго экструдера
+// отвечает за термистор первого экструдера
 #define TEMP_SENSOR_1 0
+// отвечает за термистор второго экструдера
 #define TEMP_SENSOR_2 0
+// отвечает за термистор третьего экструдера
 #define TEMP_SENSOR_3 0
 #define TEMP_SENSOR_4 0
 #define TEMP_SENSOR_5 0
@@ -413,26 +415,21 @@
 // The minimal temperature defines the temperature below which the heater will not be enabled It is used
 // to check that the wiring to the thermistor is not broken.
 // Otherwise this would lead to the heater being powered on all the time.
+// минимальная температура хотэнда, ниже которой будет выдаваться ошибка
 #define HEATER_0_MINTEMP 5
 #define HEATER_1_MINTEMP 5
 #define HEATER_2_MINTEMP 5
 #define HEATER_3_MINTEMP 5
 #define HEATER_4_MINTEMP 5
 #define HEATER_5_MINTEMP 5
+// минимальная температура греющего стола, ниже которой будет выдаваться ошибка
 #define BED_MINTEMP 5
 
 // When temperature exceeds max temp, your heater will be switched off.
 // This feature exists to protect your hotend from overheating accidentally, but *NOT* from thermistor short/failure!
 // You should use MINTEMP for thermistor short/failure protection.
+// 
 // Ограничение максимальной температуры
-// #define HEATER_0_MAXTEMP 275
-// #define HEATER_1_MAXTEMP 275
-// #define HEATER_2_MAXTEMP 275
-// #define HEATER_3_MAXTEMP 275
-// #define HEATER_4_MAXTEMP 275
-// #define HEATER_5_MAXTEMP 275
-// // #define BED_MAXTEMP 150
-// #define BED_MAXTEMP 170
 // Если вы используете хотенд с тефлоном внутри, то рекомендуем ограничить температурой 260 градусов.
 // А ДРУГИЕ
 // В зависимости от материала, которым вы печатаете, значение максимальной температуры для экструдера
@@ -447,6 +444,9 @@
 #define HEATER_3_MAXTEMP 260
 #define HEATER_4_MAXTEMP 260
 #define HEATER_5_MAXTEMP 260
+// максимальная температура греющего стола, рекомендуется ограничивать 120, я использую адгезивное стекло,
+//  с которым некоторые виды пластиков нужно греть до 135-140 градусов, так что пришлось увеличить 
+// максимальную температуру
 #define BED_MAXTEMP 150
 
 //===========================================================================
@@ -552,8 +552,8 @@
  */
 // #define PREVENT_COLD_EXTRUSION
 // Минимальная температура экструдера определяется строкой
-#define EXTRUDE_MINTEMP 5
-// #define EXTRUDE_MINTEMP 170
+// #define EXTRUDE_MINTEMP 5
+#define EXTRUDE_MINTEMP 170
 
 /**
  * Prevent a single extrusion longer than EXTRUDE_MAXLENGTH.
@@ -580,6 +580,8 @@
  *
  * If you get "Thermal Runaway" or "Heating failed" errors the
  * details can be tuned in Configuration_adv.h
+ * 
+ * Как защитить 3D принтер от пожара и поломок
  */
 
 #define THERMAL_PROTECTION_HOTENDS // Enable thermal protection for all extruders
@@ -747,9 +749,9 @@
  * 
  * - для экструдера с шестерёнчатой передачей:
  *   число_шагов_на_мм = (число_шагов_двигателя_на_оборот * микрошаг_драйвера) * передаточное_число_зубчатой_передачи/ (диаметр_сопла * 3,1415)
- * Z = (200*32)/(11*3.1415) округлили до 185
+ * Z = (200*32)/(11*3.1415) округлили до 194 может надо 193-192
  */
-#define DEFAULT_AXIS_STEPS_PER_UNIT   { (200*32)/(2*20), (200*32)/(2.0*20), (200*32)/8, 185 }
+#define DEFAULT_AXIS_STEPS_PER_UNIT   { (200*32)/(2*20), (200*32)/(2.0*20), (200*32)/8, 194 }
 
 /**
  * Default Max Feed Rate (mm/s)
@@ -1016,8 +1018,9 @@
 // @section machine
 
 // Invert the stepper direction. Change (or reverse the motor connector) if an axis goes the wrong way.
+// поменять направление вращения шагового двигателя, если ось движется в неправильном направлении.
 #define INVERT_X_DIR false
-#define INVERT_Y_DIR true
+#define INVERT_Y_DIR false
 #define INVERT_Z_DIR false
 
 // @section extruder

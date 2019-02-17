@@ -57,7 +57,7 @@
 #endif
 
 #if DISABLED(PIDTEMPBED)
-  #define BED_CHECK_INTERVAL 5000 // ms between checks in bang-bang control
+  #define BED_CHECK_INTERVAL 5000 // мс между проверками температуры в режиме bang-bang
   #if ENABLED(BED_LIMIT_SWITCHING)
     #define BED_HYSTERESIS 2 // Only disable heating if T>target+BED_HYSTERESIS and enable heating if T>target-BED_HYSTERESIS
   #endif
@@ -99,9 +99,17 @@
    * If you get false positives for "Heating failed", increase WATCH_TEMP_PERIOD
    * and/or decrease WATCH_TEMP_INCREASE. WATCH_TEMP_INCREASE should not be set
    * below 2.
+   * 
+   * Контроль за работоспособностью нагрева: система ожидает в течение заданного периода времени, 
+   * когда командой M104 или M109 повышается целевая температура. Если температура не увеличилась 
+   * в конце этого периода, то целевая температура сбрасывается в 0. Это поведение может быть 
+   * обнулено с помощью еще одной команды M104/M109. Эта проверка также срабатывает только тогда, 
+   * когда целевая и текущая температуры различаются хотя бы на параметр WATCH_TEMP_INCREASE, 
+   * умноженный на два.
    */
-  #define WATCH_TEMP_PERIOD 20                // Seconds
-  #define WATCH_TEMP_INCREASE 2               // Degrees Celsius
+
+  #define WATCH_TEMP_PERIOD 20                // секунд для повышения температуры
+  #define WATCH_TEMP_INCREASE 2               // нагрев хотя бы на 2 градусов за 20 секунд
 #endif
 
 /**
@@ -109,7 +117,9 @@
  */
 #if ENABLED(THERMAL_PROTECTION_BED)
   #define THERMAL_PROTECTION_BED_PERIOD 20    // Seconds
-  #define THERMAL_PROTECTION_BED_HYSTERESIS 2 // Degrees Celsius
+  #define THERMAL_PROTECTION_BED_HYSTERESIS 2 // //просто выключает подогрев стола, 
+  // если T>*целевая температура*+BED_HYSTERESIS и включает его, 
+  // если T<*целевая температура*-BED_HYSTERESIS
 
   /**
    * As described above, except for the bed (M140/M190/M303).
@@ -118,12 +128,17 @@
   #define WATCH_BED_TEMP_INCREASE 2               // Degrees Celsius
 #endif
 
+// Это добавляет экспериментальный дополнительный коэффициент к мощности нагрева, 
+// пропорциональный скорости экструзии. Если Кс выбран верно, то необходимая мощность 
+// для расплавления будет добавлена пропорционально скорости экструзии
+// #define PID_ADD_EXTRUSION_RATE
+
 #if ENABLED(PIDTEMP)
   // this adds an experimental additional term to the heating power, proportional to the extrusion speed.
   // if Kc is chosen well, the additional required power due to increased melting should be compensated.
   //#define PID_EXTRUSION_SCALING
   #if ENABLED(PID_EXTRUSION_SCALING)
-    #define DEFAULT_Kc (100) //heating power=Kc*(e_speed)
+    #define DEFAULT_Kc (100) //heating power=Kc*(e_speed) мощность подогрева=Kc*(скорость_экструзии)
     #define LPQ_MAX_LEN 50
   #endif
 #endif
@@ -137,6 +152,13 @@
  * mintemp and maxtemp. Turn this off by executing M109 without F*
  * Also, if the temperature is set to a value below mintemp, it will not be changed by autotemp.
  * On an Ultimaker, some initial testing worked with M109 S215 B260 F1 in the start.gcode
+ * Автоматическая температура: целевая температура хотэнда вычисляется исходя из всех строк g-кода в буфере.
+ *  Максимум буферных шагов в секунду ШД экструдера в буфере называется "se" 
+ * Включается этот режим командой M109 S<мин_температура> B<макс_температура> F<фактор>
+ * Целевая температура устанавливается в значение мин_температура+фактор*se[шагов/сек] и 
+ * ограничивается в пределах мин_температуры и макс_температуры
+ * Отключается с помощью ввода команды М109 без F. Также, если температура установлена 
+ * в "мин_температура", то она не меняется с помощью этой функции
  */
 #define AUTOTEMP
 #if ENABLED(AUTOTEMP)
@@ -148,6 +170,8 @@
 
 // Show Temperature ADC value
 // Enable for M105 to include ADC values read from temperature sensors.
+// Показ ADC-значений температуры. Команда M105 вместо привычной информации выдаст ADC-значения, 
+// прочитанные с датчиков температуры
 //#define SHOW_TEMP_ADC_VALUES
 
 /**
@@ -182,7 +206,11 @@
 // Extruder runout prevention.
 // If the machine is idle and the temperature over MINTEMP
 // then extrude some filament every couple of SECONDS.
-//#define EXTRUDER_RUNOUT_PREVENT
+
+//  Предотвращение износа экструдера. Если принтер простаивает, и температура выше, чем MINTEMP, 
+// экструдер будет выдавливать некоторое количество филамента с периодом, указанным в параметре SECONDS
+
+#define EXTRUDER_RUNOUT_PREVENT
 #if ENABLED(EXTRUDER_RUNOUT_PREVENT)
   #define EXTRUDER_RUNOUT_MINTEMP 190
   #define EXTRUDER_RUNOUT_SECONDS 30
@@ -194,6 +222,9 @@
 
 // Calibration for AD595 / AD8495 sensor to adjust temperature measurements.
 // The final temperature is calculated as (measuredTemp * GAIN) + OFFSET.
+// Это поможет откалибровать датчик AD595, в случае, если он неправильно измеряет температуру.
+// измеряемая температура определяется как 
+// "текущая_температура = (измеренная температура * TEMP_SENSOR_AD595_GAIN) + TEMP_SENSOR_AD595_OFFSET"
 #define TEMP_SENSOR_AD595_OFFSET  0.0
 #define TEMP_SENSOR_AD595_GAIN    1.0
 #define TEMP_SENSOR_AD8495_OFFSET 0.0
@@ -205,18 +236,27 @@
  *
  * The fan will turn on automatically whenever any stepper is enabled
  * and turn off after a set period after all steppers are turned off.
+ * Эта функция отвечает за контроль над вентилятором охлаждения драйверов ШД. 
+ * Как подключить доп.вентиляторы читайте [здесь](http://3dtoday.ru/blogs/ghozt/ramps-connected-to-a-lot-of-fans-with-the-ability-to-control-each-via-/).
+ *  Вентилятор будет включаться тогда, когда хотя бы один из драйверов будет активен и выключаться
+ *  через установленное время после отключения последнего драйвера.
  */
 //#define USE_CONTROLLER_FAN
 #if ENABLED(USE_CONTROLLER_FAN)
-  //#define CONTROLLER_FAN_PIN -1        // Set a custom pin for the controller fan
-  #define CONTROLLERFAN_SECS 60          // Duration in seconds for the fan to run after all motors are disabled
-  #define CONTROLLERFAN_SPEED 255        // 255 == full speed
+  //#define CONTROLLER_FAN_PIN -1        // Пин управления вентилятором (-1 для отключения)
+  #define CONTROLLERFAN_SECS 60          // //Сколько секунд будет вращаться вентилятор после 
+  // отключения последнего драйвера
+  #define CONTROLLERFAN_SPEED 255        // 255 == full speed Можно поставить меньше, если задействованы выходы с PWM.
 #endif
 
 // When first starting the main fan, run it at full speed for the
 // given number of milliseconds.  This gets the fan spinning reliably
 // before setting a PWM value. (Does not work with software PWM for fan on Sanguinololu)
-//#define FAN_KICKSTART_TIME 100
+// При первом старте вентилятора он запускается на полной скорости на некоторое время. 
+// Это дает уверенный старт перед установлением пониженного PWM-значения (не работает с 
+// программным PWM на Sanguinololu). Примечание: это правило, возможно, действительно только 
+// для того вентилятора, который включается по команде M106
+#define FAN_KICKSTART_TIME 100 // кол-во мс полной скорости
 
 /**
  * PWM Fan Scaling
@@ -246,8 +286,19 @@
  *
  * Multiple extruders can be assigned to the same pin in which case
  * the fan will turn on when any selected extruder is above the threshold.
+ * 
+ * Вентиляторы охлаждения экструдера
+ *
+ * Вентиляторы экструдера автоматически включаются, когда температура экструдера 
+ * поднимается выше EXTRUDER_AUTO_FAN_TEMPERATURE.
+ *
+ * В файле пинов вашей платы указаны рекомендуемые пины. Переопределите их здесь
+ * или установите -1, чтобы полностью отключить.
+ *
+ * В этом случае несколько экструдеров могут быть назначены на один и тот же вывод
+ * вентилятор, когда любой выбранный экструдер превысит пороговое значение вентилятор включится.
  */
-#define E0_AUTO_FAN_PIN -1
+#define E0_AUTO_FAN_PIN 2
 #define E1_AUTO_FAN_PIN -1
 #define E2_AUTO_FAN_PIN -1
 #define E3_AUTO_FAN_PIN -1
@@ -255,7 +306,7 @@
 #define E5_AUTO_FAN_PIN -1
 #define CHAMBER_AUTO_FAN_PIN -1
 #define EXTRUDER_AUTO_FAN_TEMPERATURE 50
-#define EXTRUDER_AUTO_FAN_SPEED 255   // 255 == full speed
+#define EXTRUDER_AUTO_FAN_SPEED 255   // 255 == full speed Можно поставить меньше, если задействованы выходы с PWM.
 
 /**
  * Part-Cooling Fan Multiplexer
@@ -296,7 +347,8 @@
 
 // @section extras
 
-//#define Z_LATE_ENABLE // Enable Z the last moment. Needed if your Z driver overheats.
+// Включает драйвер ШД оси Z в последний момент. Нужна в случае перегрева соответствующего драйвера ШД.
+#define Z_LATE_ENABLE // Enable Z the last moment. Needed if your Z driver overheats.
 
 // Employ an external closed loop controller. Override pins here if needed.
 //#define EXTERNAL_CLOSED_LOOP_CONTROLLER
@@ -340,6 +392,13 @@
   #endif
 #endif
 
+// Обычно используется один драйвер ШД для управления двумя моторами на оси Z. 
+// Раскомментируете для использования раздельных драйверов на каждый ШД Z-оси.
+//  Такую функцию поддерживают лишь некоторые платы, например, RAMPS, у которой 
+// есть поддержка 2 экструдеров (используется второй, обычно неиспользуемый драйвер ШД) 
+// Пины управления указаны для RAMPS, в случае другой платы исправьте их на свои. 
+// На 5-драйверной плате включение этой функции ограничит вас возможностью использования
+// только одного экструдера
 //#define Z_DUAL_STEPPER_DRIVERS
 #if ENABLED(Z_DUAL_STEPPER_DRIVERS)
   //#define Z_DUAL_ENDSTOPS
@@ -369,14 +428,25 @@
  * The inactive carriage is parked automatically to prevent oozing.
  * X1 is the left carriage, X2 the right. They park and home at opposite ends of the X axis.
  * By default the X2 stepper is assigned to the first unused E plug on the board.
+ * Функция поддержки принтеров с двойной Х-кареткой. Подобная конструкция имеет преимущество, 
+ * т.к. неактивный экструдер может быть запаркован, что предотвратит вытекание горячего пластика 
+ * из сопла, который загрязняет печать. Также это снижает общий вес каждой Х-каретки, позволяя 
+ * печатать с более высокими скоростями
  */
 //#define DUAL_X_CARRIAGE
 #if ENABLED(DUAL_X_CARRIAGE)
+  // Конфигурация для второй Х-каретки 
+  // Примечание: первая Х-каретка - это та, которая паркуется в концевой выключатель минимального 
+  // положения, а вторая всегда паркуется в концевой выключатель максимального положения.
   #define X1_MIN_POS X_MIN_POS  // set minimum to ensure first x-carriage doesn't hit the parked second X-carriage
   #define X1_MAX_POS X_BED_SIZE // set maximum to ensure first x-carriage doesn't hit the parked second X-carriage
+  // устанавливает минимальное расстояние, при котором вторая Х-каретка не задевает запаркованную первую Х-каретку
   #define X2_MIN_POS 80     // set minimum to ensure second x-carriage doesn't hit the parked first X-carriage
+  // максимальное расстояние между соплами, когда обе каретки запаркованы
   #define X2_MAX_POS 353    // set maximum to the distance between toolheads when both heads are homed
+  // вторая каретка всегда паркуется в концевой выключатель максимальной позиции
   #define X2_HOME_DIR 1     // the second X-carriage always homes to the maximum endstop position
+  // позиция парковки по умолчанию - это максимальная позиция второй каретки
   #define X2_HOME_POS X2_MAX_POS // default home position is the maximum carriage position
       // However: In this mode the HOTEND_OFFSET_X value for the second extruder provides a software
       // override for X2_HOME_POS. This also allow recalibration of the distance between the two endstops
