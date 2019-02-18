@@ -307,7 +307,7 @@
 #if POWER_SUPPLY > 0
   // Enable this option to leave the PSU off at startup.
   // Power to steppers and heaters will need to be turned on with M80.
-  // #define PS_DEFAULT_OFF
+  #define PS_DEFAULT_OFF
 
   //#define AUTO_POWER_CONTROL        // Enable automatic control of the PS_ON pin
   #if ENABLED(AUTO_POWER_CONTROL)
@@ -515,6 +515,9 @@
  * Applies to all forms of bed control (PID, bang-bang, and bang-bang with hysteresis).
  * When set to any value below 255, enables a form of PWM to the bed that acts like a divider
  * so don't use it unless you are OK with PWM on your bed. (See the comment on enabling PIDTEMPBED)
+ * При = 255 БП закружен и проседает напруга и ток не очень текЁт в конфорку. При 254 БП успевает 
+ * набить кондеры током и пускает больше в стол по большему вольтажу.
+ * #define MAX_BED_POWER 254
  */
 #define MAX_BED_POWER 255 // limits duty cycle to bed; 255=full current
 
@@ -552,8 +555,8 @@
  */
 // #define PREVENT_COLD_EXTRUSION
 // Минимальная температура экструдера определяется строкой
-// #define EXTRUDE_MINTEMP 5
-#define EXTRUDE_MINTEMP 170
+#define EXTRUDE_MINTEMP 5
+// #define EXTRUDE_MINTEMP 170
 
 /**
  * Prevent a single extrusion longer than EXTRUDE_MAXLENGTH.
@@ -928,6 +931,7 @@
 #define X_PROBE_OFFSET_FROM_EXTRUDER 10  // X offset: -left  +right  [of the nozzle]
 #define Y_PROBE_OFFSET_FROM_EXTRUDER 10  // Y offset: -front +behind [the nozzle]
 #define Z_PROBE_OFFSET_FROM_EXTRUDER 0   // Z offset: -below +above  [the nozzle]
+
 
 // Certain types of probes need to stay away from edges
 #define MIN_PROBE_EDGE 10

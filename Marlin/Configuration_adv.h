@@ -48,13 +48,14 @@
   #undef TEMP_SENSOR_BED
   #define TEMP_SENSOR_BED 70
   #define HEATER_BED_INVERTING true
-//  #define HEATER_0_INVERTING true
-//  За одно и остальные что б не светились лампочки.
-//  #define HEATER_1_INVERTING true
-//  #define HEATER_2_INVERTING true
-//  И что б вентилятор на втором контакте включался при температуре выше 50.
-//  #define E0_AUTO_FAN_PIN 2
+
 #endif
+
+// для RAMPS-FD очень важно а то неотключает питание с сопла
+#define HEATER_0_INVERTING true
+//  За одно и остальные что б не светились лампочки.
+#define HEATER_1_INVERTING true
+#define HEATER_2_INVERTING true
 
 #if DISABLED(PIDTEMPBED)
   #define BED_CHECK_INTERVAL 5000 // мс между проверками температуры в режиме bang-bang
@@ -82,6 +83,8 @@
 #if ENABLED(THERMAL_PROTECTION_HOTENDS)
   #define THERMAL_PROTECTION_PERIOD 40        // Seconds
   #define THERMAL_PROTECTION_HYSTERESIS 4     // Degrees Celsius
+  // #define THERMAL_PROTECTION_PERIOD 100 // (40)  старое значение
+  // #define THERMAL_PROTECTION_HYSTERESIS 15 // (4) старое значение
 
   //#define ADAPTIVE_FAN_SLOWING              // Slow part cooling fan if temperature drops
   #if ENABLED(ADAPTIVE_FAN_SLOWING) && ENABLED(PIDTEMP)
@@ -108,8 +111,10 @@
    * умноженный на два.
    */
 
-  #define WATCH_TEMP_PERIOD 20                // секунд для повышения температуры
-  #define WATCH_TEMP_INCREASE 2               // нагрев хотя бы на 2 градусов за 20 секунд
+  // #define WATCH_TEMP_PERIOD 20                // секунд для повышения температуры
+  // #define WATCH_TEMP_INCREASE 2               // нагрев хотя бы на 2 градусов за 20 секунд
+  #define WATCH_TEMP_PERIOD 25 // (16) старое значение
+  #define WATCH_TEMP_INCREASE 6 // (4) старое значение
 #endif
 
 /**
@@ -120,6 +125,8 @@
   #define THERMAL_PROTECTION_BED_HYSTERESIS 2 // //просто выключает подогрев стола, 
   // если T>*целевая температура*+BED_HYSTERESIS и включает его, 
   // если T<*целевая температура*-BED_HYSTERESIS
+  // #define THERMAL_PROTECTION_BED_PERIOD 100 // (20) старое значение
+  // #define THERMAL_PROTECTION_BED_HYSTERESIS 15 // (2) старое значение
 
   /**
    * As described above, except for the bed (M140/M190/M303).
@@ -297,6 +304,8 @@
  *
  * В этом случае несколько экструдеров могут быть назначены на один и тот же вывод
  * вентилятор, когда любой выбранный экструдер превысит пороговое значение вентилятор включится.
+ *  И что б вентилятор на втором контакте включался при температуре выше 50.
+ *  #define E0_AUTO_FAN_PIN 2
  */
 #define E0_AUTO_FAN_PIN 2
 #define E1_AUTO_FAN_PIN -1
