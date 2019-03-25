@@ -54,7 +54,7 @@
 // для RAMPS-FD очень важно а то неотключает питание с сопла
 #define HEATER_0_INVERTING true
 //  За одно и остальные что б не светились лампочки.
-#define HEATER_1_INVERTING true
+#define HEATER_1_INVERTING false
 #define HEATER_2_INVERTING true
 
 #if DISABLED(PIDTEMPBED)

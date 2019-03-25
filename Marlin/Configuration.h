@@ -438,12 +438,12 @@
 // Например, экструдер типа J-head имеет фторопластовую трубку внутри для направления пластиковой нити, 
 // которая может быть повреждена при нагреве до 240°C. Чтобы этого не случилось, укажем максимальное 
 // значение в 230 градусов для экструдера и 120°C для стола
-#define HEATER_0_MAXTEMP 260
-#define HEATER_1_MAXTEMP 260
-#define HEATER_2_MAXTEMP 260
-#define HEATER_3_MAXTEMP 260
-#define HEATER_4_MAXTEMP 260
-#define HEATER_5_MAXTEMP 260
+#define HEATER_0_MAXTEMP 275
+#define HEATER_1_MAXTEMP 275
+#define HEATER_2_MAXTEMP 275
+#define HEATER_3_MAXTEMP 275
+#define HEATER_4_MAXTEMP 275
+#define HEATER_5_MAXTEMP 275
 // максимальная температура греющего стола, рекомендуется ограничивать 120, я использую адгезивное стекло,
 //  с которым некоторые виды пластиков нужно греть до 135-140 градусов, так что пришлось увеличить 
 // максимальную температуру
@@ -472,10 +472,18 @@
 
   // If you are using a pre-configured hotend then you can use one of the value sets by uncommenting it
 
+  //  Bot.uno
+  //#define DEFAULT_Kp 18.39
+  //#define DEFAULT_Ki 1.14
+  //#define DEFAULT_Kd 73.91
+  #define DEFAULT_Kp 15.65
+  #define DEFAULT_Ki 0.95
+  #define DEFAULT_Kd 64.46
+
   // Ultimaker
-  #define DEFAULT_Kp 22.2
-  #define DEFAULT_Ki 1.08
-  #define DEFAULT_Kd 114
+  //#define DEFAULT_Kp 22.2
+  //#define DEFAULT_Ki 1.08
+  //#define DEFAULT_Kd 114
 
   // MakerGear
   //#define DEFAULT_Kp 7.0
@@ -521,6 +529,8 @@
  */
 #define MAX_BED_POWER 255 // limits duty cycle to bed; 255=full current
 
+#define  MAX_OVERSHOOT_PID_AUTOTUNE  100
+
 #if ENABLED(PIDTEMPBED)
 
   //#define PID_BED_DEBUG // Sends debug data to the serial port.
@@ -553,10 +563,10 @@
  * материала когда он недостаточно нагрет (температура экструдера ниже температуры плавления материала):
  * Эту функцию при необходимости можно отключить командой M302 из вашей программы.
  */
-// #define PREVENT_COLD_EXTRUSION
+ #define PREVENT_COLD_EXTRUSION
 // Минимальная температура экструдера определяется строкой
-#define EXTRUDE_MINTEMP 5
-// #define EXTRUDE_MINTEMP 170
+//#define EXTRUDE_MINTEMP 5
+ #define EXTRUDE_MINTEMP 170
 
 /**
  * Prevent a single extrusion longer than EXTRUDE_MAXLENGTH.
@@ -761,7 +771,7 @@
  * Override with M203
  *                                      X, Y, Z, E0 [, E1[, E2[, E3[, E4[, E5]]]]]
  */
-#define DEFAULT_MAX_FEEDRATE          { 150, 150, 10, 25 }
+#define DEFAULT_MAX_FEEDRATE          { 300, 300, 5, 25 }
 
 /**
  * Default Max Acceleration (change/s) change = mm/s
@@ -1307,7 +1317,7 @@
 #endif
 
 // Add a menu item to move between bed corners for manual bed adjustment
-#define LEVEL_BED_CORNERS
+//#define LEVEL_BED_CORNERS
 
 #if ENABLED(LEVEL_BED_CORNERS)
   #define LEVEL_CORNERS_INSET 30    // (mm) An inset for corner leveling
@@ -1465,12 +1475,12 @@
 #define PREHEAT_1_LABEL       "PLA"
 #define PREHEAT_1_TEMP_HOTEND 180
 #define PREHEAT_1_TEMP_BED     70
-#define PREHEAT_1_FAN_SPEED   255 // Value from 0 to 255
+#define PREHEAT_1_FAN_SPEED     0 // Value from 0 to 255
 
 #define PREHEAT_2_LABEL       "ABS"
 #define PREHEAT_2_TEMP_HOTEND 240
 #define PREHEAT_2_TEMP_BED    110
-#define PREHEAT_2_FAN_SPEED   255 // Value from 0 to 255
+#define PREHEAT_2_FAN_SPEED     0 // Value from 0 to 255
 
 /**
  * Nozzle Park
