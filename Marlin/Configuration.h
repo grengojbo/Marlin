@@ -224,7 +224,7 @@
  */
 //#define MAGNETIC_PARKING_EXTRUDER
 
-#if ENABLED(PARKING_EXTRUDER) || ENABLED(MAGNETIC_PARKING_EXTRUDER)
+#if EITHER(PARKING_EXTRUDER, MAGNETIC_PARKING_EXTRUDER)
 
   #define PARKING_EXTRUDER_PARKING_X { -78, 184 }     // X positions for parking the extruders
   #define PARKING_EXTRUDER_GRAB_DISTANCE 1            // (mm) Distance to move beyond the parking point to grab the extruder
@@ -355,6 +355,7 @@
  *    60 : 100k Maker's Tool Works Kapton Bed Thermistor beta=3950
  *    61 : 100k Formbot / Vivedino 3950 350C thermistor 4.7k pullup
  *    66 : 4.7M High Temperature thermistor from Dyze Design
+ *    67 : 450C thermistor from SliceEngineering
  *    70 : the 100K thermistor found in the bq Hephestos 2
  *    75 : 100k Generic Silicon Heat Pad with NTC 100K MGB18-104F39050L32 thermistor
  *
@@ -374,13 +375,13 @@
  *   999 : Dummy Table that ALWAYS reads 100°C or the temperature defined below.
  *
  * :{ '0': "Not used", '1':"100k / 4.7k - EPCOS", '2':"200k / 4.7k - ATC Semitec 204GT-2", '3':"Mendel-parts / 4.7k", '4':"10k !! do not use for a hotend. Bad resolution at high temp. !!", '5':"100K / 4.7k - ATC Semitec 104GT-2 (Used in ParCan & J-Head)", '501':"100K Zonestar (Tronxy X3A)", '6':"100k / 4.7k EPCOS - Not as accurate as Table 1", '7':"100k / 4.7k Honeywell 135-104LAG-J01", '8':"100k / 4.7k 0603 SMD Vishay NTCS0603E3104FXT", '9':"100k / 4.7k GE Sensing AL03006-58.2K-97-G1", '10':"100k / 4.7k RS 198-961", '11':"100k / 4.7k beta 3950 1%", '12':"100k / 4.7k 0603 SMD Vishay NTCS0603E3104FXT (calibrated for Makibox hot bed)", '13':"100k Hisens 3950  1% up to 300°C for hotend 'Simple ONE ' & hotend 'All In ONE'", '20':"PT100 (Ultimainboard V2.x)", '51':"100k / 1k - EPCOS", '52':"200k / 1k - ATC Semitec 204GT-2", '55':"100k / 1k - ATC Semitec 104GT-2 (Used in ParCan & J-Head)", '60':"100k Maker's Tool Works Kapton Bed Thermistor beta=3950", '61':"100k Formbot / Vivedino 3950 350C thermistor 4.7k pullup", '66':"Dyze Design 4.7M High Temperature thermistor", '70':"the 100K thermistor found in the bq Hephestos 2", '71':"100k / 4.7k Honeywell 135-104LAF-J01", '147':"Pt100 / 4.7k", '1047':"Pt1000 / 4.7k", '110':"Pt100 / 1k (non-standard)", '1010':"Pt1000 / 1k (non standard)", '-4':"Thermocouple + AD8495", '-3':"Thermocouple + MAX31855 (only for sensor 0)", '-2':"Thermocouple + MAX6675 (only for sensor 0)", '-1':"Thermocouple + AD595",'998':"Dummy 1", '999':"Dummy 2" }
- * 
- * TEMP_SENSOR_0 соответствует датчику температуры первого экструдера, 
- * а TEMP_SENSOR_BED - датчику температуры стола. Если один из датчиков не используется, 
+ *
+ * TEMP_SENSOR_0 соответствует датчику температуры первого экструдера,
+ * а TEMP_SENSOR_BED - датчику температуры стола. Если один из датчиков не используется,
  * установите значение его номера в ноль.
  */
 // pins_RAMPS_FD_V1.h смотреть #define TEMP_0_PIN на какой пин подключен
-#define TEMP_SENSOR_0 5
+#define TEMP_SENSOR_0 13
 // отвечает за термистор первого экструдера
 #define TEMP_SENSOR_1 0
 // отвечает за термистор второго экструдера
@@ -392,6 +393,7 @@
 // отвечает за термистор стола
 #define TEMP_SENSOR_BED 1
 #define TEMP_SENSOR_CHAMBER 0
+#define CHAMBER_HEATER_PIN -1  // On/off pin for enclosure heating system
 
 // Dummy thermistor constant temperature readings, for use with 998 and 999
 #define DUMMY_THERMISTOR_998_VALUE 25
@@ -402,52 +404,52 @@
 //#define TEMP_SENSOR_1_AS_REDUNDANT
 #define MAX_REDUNDANT_TEMP_SENSOR_DIFF 10
 
-// Extruder temperature must be close to target for this long before M109 returns success
-#define TEMP_RESIDENCY_TIME 10  // (seconds)
-#define TEMP_HYSTERESIS 3       // (degC) range of +/- temperatures considered "close" to the target one
-#define TEMP_WINDOW     1       // (degC) Window around target to start the residency timer x degC early.
+#define TEMP_RESIDENCY_TIME     10  // (seconds) Time to wait for hotend to "settle" in M109
+#define TEMP_WINDOW              1  // (°C) Temperature proximity for the "temperature reached" timer
+#define TEMP_HYSTERESIS          3  // (°C) Temperature proximity considered "close enough" to the target
 
-// Bed temperature must be close to target for this long before M190 returns success
-#define TEMP_BED_RESIDENCY_TIME 10  // (seconds)
-#define TEMP_BED_HYSTERESIS 3       // (degC) range of +/- temperatures considered "close" to the target one
-#define TEMP_BED_WINDOW     1       // (degC) Window around target to start the residency timer x degC early.
+#define TEMP_BED_RESIDENCY_TIME 10  // (seconds) Time to wait for bed to "settle" in M190
+#define TEMP_BED_WINDOW          1  // (°C) Temperature proximity for the "temperature reached" timer
+#define TEMP_BED_HYSTERESIS      3  // (°C) Temperature proximity considered "close enough" to the target
 
-// The minimal temperature defines the temperature below which the heater will not be enabled It is used
-// to check that the wiring to the thermistor is not broken.
-// Otherwise this would lead to the heater being powered on all the time.
+#define TEMP_CHAMBER_HYSTERESIS  3  // (°C) Temperature proximity considered "close enough" to the target
+
+// Below this temperature the heater will be switched off
+// because it probably indicates a broken thermistor wire.
 // минимальная температура хотэнда, ниже которой будет выдаваться ошибка
-#define HEATER_0_MINTEMP 5
-#define HEATER_1_MINTEMP 5
-#define HEATER_2_MINTEMP 5
-#define HEATER_3_MINTEMP 5
-#define HEATER_4_MINTEMP 5
-#define HEATER_5_MINTEMP 5
+#define HEATER_0_MINTEMP   5
+#define HEATER_1_MINTEMP   5
+#define HEATER_2_MINTEMP   5
+#define HEATER_3_MINTEMP   5
+#define HEATER_4_MINTEMP   5
+#define HEATER_5_MINTEMP   5
 // минимальная температура греющего стола, ниже которой будет выдаваться ошибка
-#define BED_MINTEMP 5
+#define BED_MINTEMP        5
+#define CHAMBER_MINTEMP    5
 
-// When temperature exceeds max temp, your heater will be switched off.
-// This feature exists to protect your hotend from overheating accidentally, but *NOT* from thermistor short/failure!
-// You should use MINTEMP for thermistor short/failure protection.
-// 
+// Above this temperature the heater will be switched off.
+// This can protect components from overheating, but NOT from shorts and failures.
+// (Use MINTEMP for thermistor short/failure protection.)
 // Ограничение максимальной температуры
 // Если вы используете хотенд с тефлоном внутри, то рекомендуем ограничить температурой 260 градусов.
 // А ДРУГИЕ
 // В зависимости от материала, которым вы печатаете, значение максимальной температуры для экструдера
-// и подогрева стола может отличаться. Это значение не даёт перегреваться экструдеру и столу сверх 
-// необходимого. Оно также зависит от термической стойкости частей экструдера. 
-// Например, экструдер типа J-head имеет фторопластовую трубку внутри для направления пластиковой нити, 
-// которая может быть повреждена при нагреве до 240°C. Чтобы этого не случилось, укажем максимальное 
+// и подогрева стола может отличаться. Это значение не даёт перегреваться экструдеру и столу сверх
+// необходимого. Оно также зависит от термической стойкости частей экструдера.
+// Например, экструдер типа J-head имеет фторопластовую трубку внутри для направления пластиковой нити,
+// которая может быть повреждена при нагреве до 240°C. Чтобы этого не случилось, укажем максимальное
 // значение в 230 градусов для экструдера и 120°C для стола
-#define HEATER_0_MAXTEMP 275
-#define HEATER_1_MAXTEMP 275
-#define HEATER_2_MAXTEMP 275
-#define HEATER_3_MAXTEMP 275
-#define HEATER_4_MAXTEMP 275
-#define HEATER_5_MAXTEMP 275
+#define HEATER_0_MAXTEMP 260
+#define HEATER_1_MAXTEMP 260
+#define HEATER_2_MAXTEMP 260
+#define HEATER_3_MAXTEMP 260
+#define HEATER_4_MAXTEMP 260
+#define HEATER_5_MAXTEMP 260
 // максимальная температура греющего стола, рекомендуется ограничивать 120, я использую адгезивное стекло,
-//  с которым некоторые виды пластиков нужно греть до 135-140 градусов, так что пришлось увеличить 
+//  с которым некоторые виды пластиков нужно греть до 135-140 градусов, так что пришлось увеличить
 // максимальную температуру
 #define BED_MAXTEMP 150
+#define CHAMBER_MAXTEMP  100
 
 //===========================================================================
 //============================= PID Settings ================================
@@ -476,9 +478,14 @@
   //#define DEFAULT_Kp 18.39
   //#define DEFAULT_Ki 1.14
   //#define DEFAULT_Kd 73.91
-  #define DEFAULT_Kp 15.65
-  #define DEFAULT_Ki 0.95
-  #define DEFAULT_Kd 64.46
+  
+  // #define DEFAULT_Kp 15.65
+  // #define DEFAULT_Ki 0.95
+  // #define DEFAULT_Kd 64.46
+  
+  #define DEFAULT_Kp 17.80
+  #define DEFAULT_Ki 1.08
+  #define DEFAULT_Kd 73.34
 
   // Ultimaker
   //#define DEFAULT_Kp 22.2
@@ -523,7 +530,7 @@
  * Applies to all forms of bed control (PID, bang-bang, and bang-bang with hysteresis).
  * When set to any value below 255, enables a form of PWM to the bed that acts like a divider
  * so don't use it unless you are OK with PWM on your bed. (See the comment on enabling PIDTEMPBED)
- * При = 255 БП закружен и проседает напруга и ток не очень текЁт в конфорку. При 254 БП успевает 
+ * При = 255 БП закружен и проседает напруга и ток не очень текЁт в конфорку. При 254 БП успевает
  * набить кондеры током и пускает больше в стол по большему вольтажу.
  * #define MAX_BED_POWER 254
  */
@@ -558,8 +565,8 @@
  * cold extrusion prevention on and off.
  *
  * *** IT IS HIGHLY RECOMMENDED TO LEAVE THIS OPTION ENABLED! ***
- * 
- * Для того, чтобы исключить механическое повреждения нашего принтера отключим выдавливание 
+ *
+ * Для того, чтобы исключить механическое повреждения нашего принтера отключим выдавливание
  * материала когда он недостаточно нагрет (температура экструдера ниже температуры плавления материала):
  * Эту функцию при необходимости можно отключить командой M302 из вашей программы.
  */
@@ -571,7 +578,7 @@
 /**
  * Prevent a single extrusion longer than EXTRUDE_MAXLENGTH.
  * Note: For Bowden Extruders make this large enough to allow load/unload.
- * 
+ *
  * Слишком длительное выдавливание можно отключить опцией
  * Это полезно при необходимости быстрой отмены печати при ошибке.
  */
@@ -593,12 +600,13 @@
  *
  * If you get "Thermal Runaway" or "Heating failed" errors the
  * details can be tuned in Configuration_adv.h
- * 
+ *
  * Как защитить 3D принтер от пожара и поломок
  */
 
 #define THERMAL_PROTECTION_HOTENDS // Enable thermal protection for all extruders
 #define THERMAL_PROTECTION_BED     // Enable thermal protection for the heated bed
+#define THERMAL_PROTECTION_CHAMBER // Enable thermal protection for the heated chamber
 
 //===========================================================================
 //============================= Mechanical Settings =========================
@@ -658,8 +666,8 @@
 #endif
 
 // Mechanical endstop with COM to ground and NC to Signal uses "false" here (most common setup).
-// Если у вас механические концевики, то при срабатывание цепь замыкается, напротив каждой строчки 
-// соответствующей оси поставьте значения  "true". Если вы используете оптические концевики, то при 
+// Если у вас механические концевики, то при срабатывание цепь замыкается, напротив каждой строчки
+// соответствующей оси поставьте значения  "true". Если вы используете оптические концевики, то при
 // срабатывании цепь размыкается, напротив каждой строчки соответствующей оси поставьте значения  "false".
 #define X_MIN_ENDSTOP_INVERTING true // set to true to invert the logic of the endstop.
 #define Y_MIN_ENDSTOP_INVERTING true // set to true to invert the logic of the endstop.
@@ -742,7 +750,7 @@
  *                                      X, Y, Z, E0 [, E1[, E2[, E3[, E4[, E5]]]]]
  * - для зубчатых ремней. Если у вас зубчатый шкив Gt2 с шагом 2 мм и с количеством зубьев 20, то формула такая:
  *   число_шагов_на_мм = (число_шагов_двигателя_на_оборот * микрошаг_драйвера) / (шаг_ремня * число_зубьев_на_шкиве)
- * 
+ *
  * - для винтовых передач. По оси Z могут стоять:
  *    Шпилька М8 с шагом резьбы 1,25 мм, тогда формула: 200*16/1.25=2560
  *    Шпилька M5 с шагом резьбы 0.8 мм, тогда формула: 200*16/0.8=4000
@@ -750,16 +758,16 @@
  *    Трапецеидальный винт диаметром 8 мм с шагом 2 мм  и заходностью 1, тогда формула: 200*16/2=1600
  *    Трапецеидальный винт диаметром 8 мм с шагом 2 мм  и заходностью 4, тогда формула: 200*16/2*4=400
  *    В Pruse i3 Steel используются шпильки М5 , тогда получается число 4000.
- *    Заходность резьбы легко определить с торца винта по числу сбегающих витков. Все крепежные резьбы однозаходные. 
+ *    Заходность резьбы легко определить с торца винта по числу сбегающих витков. Все крепежные резьбы однозаходные.
  *    Многозаходные резьбы применяют преимущественно в винтовых механизмах. Число заходов больше трех применяется редко.
- *    Как померить шаг винта? Замеряем участок винта и считаем на нём витки, 
- *    затем длину участка в миллиметрах делим на количество витков 20/16=1.25 мм. 
+ *    Как померить шаг винта? Замеряем участок винта и считаем на нём витки,
+ *    затем длину участка в миллиметрах делим на количество витков 20/16=1.25 мм.
  *    Для более точного результата замеряем максимальный участок винта.
  *   число_шагов_на_мм = (число_шагов_двигателя_на_оборот * микрошаг_драйвера) / шаг_винта
- * 
+ *
  * - для экструдера с прямым приводом:
  *   число_шагов_на_мм = (число_шагов_двигателя_на_оборот * микрошаг_драйвера) / (диаметр_сопла * 3,1415)
- * 
+ *
  * - для экструдера с шестерёнчатой передачей:
  *   число_шагов_на_мм = (число_шагов_двигателя_на_оборот * микрошаг_драйвера) * передаточное_число_зубчатой_передачи/ (диаметр_сопла * 3,1415)
  * Z = (200*32)/(11*3.1415) округлили до 194 может надо 193-192
@@ -846,11 +854,11 @@
 #define Z_MIN_PROBE_USES_Z_MIN_ENDSTOP_PIN
 
 /**
- * Z_MIN_PROBE_ENDSTOP
+ * Z_MIN_PROBE_PIN
  *
- * Enable this option for a probe connected to any pin except Z-Min.
- * (By default Marlin assumes the Z-Max endstop pin.)
- * To use a custom Z Probe pin, set Z_MIN_PROBE_PIN below.
+ * Define this pin if the probe is not connected to Z_MIN_PIN.
+ * If not defined the default pin for the selected MOTHERBOARD
+ * will be used. Most of the time the default is what you want.
  *
  *  - The simplest option is to use a free endstop connector.
  *  - Use 5V for powered (usually inductive) sensors.
@@ -860,11 +868,8 @@
  *      - normally-closed switches to GND and D32.
  *      - normally-open switches to 5V and D32.
  *
- * WARNING: Setting the wrong pin may have unexpected and potentially
- * disastrous consequences. Use with caution and do your homework.
- *
  */
-//#define Z_MIN_PROBE_ENDSTOP
+//#define Z_MIN_PROBE_PIN 32 // Pin 32 is the RAMPS default
 
 /**
  * Probe Type
@@ -899,6 +904,17 @@
 //#define BLTOUCH
 #if ENABLED(BLTOUCH)
   //#define BLTOUCH_DELAY 375   // (ms) Enable and increase if needed
+
+  /**
+   * BLTouch V3.0 and newer smart series
+   * For genuine BLTouch 3.0 sensors. Clones may be confused by 3.0 command angles. YMMV.
+   * If the pin trigger is not detected, first try swapping the black and white wires then toggle this.
+   */
+  //#define BLTOUCH_V3
+  #if ENABLED(BLTOUCH_V3)
+    //#define BLTOUCH_FORCE_5V_MODE
+    //#define BLTOUCH_FORCE_OPEN_DRAIN_MODE
+  #endif
 #endif
 
 // A probe that is deployed and stowed with a solenoid pin (SOL1_PIN)
@@ -941,7 +957,6 @@
 #define X_PROBE_OFFSET_FROM_EXTRUDER 10  // X offset: -left  +right  [of the nozzle]
 #define Y_PROBE_OFFSET_FROM_EXTRUDER 10  // Y offset: -front +behind [the nozzle]
 #define Z_PROBE_OFFSET_FROM_EXTRUDER 0   // Z offset: -below +above  [the nozzle]
-
 
 // Certain types of probes need to stay away from edges
 #define MIN_PROBE_EDGE 10
@@ -1072,8 +1087,8 @@
 
 // Travel limits (mm) after homing, corresponding to endstop positions.
 // Размеры рабочей области принтера
-// Здесь мы можем указать программе пределы перемещения экструдера. 
-// Лучше указать чуть меньшее перемещение чем допускается механикой, а позже, 
+// Здесь мы можем указать программе пределы перемещения экструдера.
+// Лучше указать чуть меньшее перемещение чем допускается механикой, а позже,
 // после проверки работы принтера, установить максимально возможные значения
 #define X_MIN_POS 0
 #define Y_MIN_POS 0
@@ -1107,7 +1122,7 @@
   #define MAX_SOFTWARE_ENDSTOP_Z
 #endif
 
-#if ENABLED(MIN_SOFTWARE_ENDSTOPS) || ENABLED(MAX_SOFTWARE_ENDSTOPS)
+#if EITHER(MIN_SOFTWARE_ENDSTOPS, MAX_SOFTWARE_ENDSTOPS)
   //#define SOFT_ENDSTOPS_MENU_ITEM  // Enable/Disable software endstops from the LCD
 #endif
 
@@ -1201,7 +1216,7 @@
  */
 //#define DEBUG_LEVELING_FEATURE
 
-#if ENABLED(MESH_BED_LEVELING) || ENABLED(AUTO_BED_LEVELING_BILINEAR) || ENABLED(AUTO_BED_LEVELING_UBL)
+#if ANY(MESH_BED_LEVELING, AUTO_BED_LEVELING_BILINEAR, AUTO_BED_LEVELING_UBL)
   // Gradually reduce leveling correction until a set height is reached,
   // at which point movement will be level to the machine's XY plane.
   // The height can be set with M420 Z<height>
@@ -1220,13 +1235,14 @@
   #if ENABLED(G26_MESH_VALIDATION)
     #define MESH_TEST_NOZZLE_SIZE    0.4  // (mm) Diameter of primary nozzle.
     #define MESH_TEST_LAYER_HEIGHT   0.2  // (mm) Default layer height for the G26 Mesh Validation Tool.
-    #define MESH_TEST_HOTEND_TEMP  205.0  // (°C) Default nozzle temperature for the G26 Mesh Validation Tool.
-    #define MESH_TEST_BED_TEMP      60.0  // (°C) Default bed temperature for the G26 Mesh Validation Tool.
+    #define MESH_TEST_HOTEND_TEMP  205    // (°C) Default nozzle temperature for the G26 Mesh Validation Tool.
+    #define MESH_TEST_BED_TEMP      60    // (°C) Default bed temperature for the G26 Mesh Validation Tool.
+    #define G26_XY_FEEDRATE         20    // (mm/s) Feedrate for XY Moves for the G26 Mesh Validation Tool.
   #endif
 
 #endif
 
-#if ENABLED(AUTO_BED_LEVELING_LINEAR) || ENABLED(AUTO_BED_LEVELING_BILINEAR)
+#if EITHER(AUTO_BED_LEVELING_LINEAR, AUTO_BED_LEVELING_BILINEAR)
 
   // Set the number of grid points per dimension.
   #define GRID_MAX_POINTS_X 3
@@ -1295,7 +1311,7 @@
  * Points to probe for all 3-point Leveling procedures.
  * Override if the automatically selected points are inadequate.
  */
-#if ENABLED(AUTO_BED_LEVELING_3POINT) || ENABLED(AUTO_BED_LEVELING_UBL)
+#if EITHER(AUTO_BED_LEVELING_3POINT, AUTO_BED_LEVELING_UBL)
   //#define PROBE_PT_1_X 15
   //#define PROBE_PT_1_Y 180
   //#define PROBE_PT_2_X 15
@@ -1322,6 +1338,7 @@
 #if ENABLED(LEVEL_BED_CORNERS)
   #define LEVEL_CORNERS_INSET 30    // (mm) An inset for corner leveling
   #define LEVEL_CORNERS_Z_HOP  4.0  // (mm) Move nozzle up before moving between corners
+  #define LEVEL_CORNERS_HEIGHT 0.0  // (mm) Z height of nozzle at leveling points
   //#define LEVEL_CENTER_TOO        // Move to the center after the last corner
 #endif
 
@@ -1361,7 +1378,7 @@
 
 // Homing speeds (mm/m)
 // Скорость перемещения к началу координат ("дому")
-// Скорость перемещения экструдера к началу координат обозначается в мм/мин, для каждой оси отдельно. 
+// Скорость перемещения экструдера к началу координат обозначается в мм/мин, для каждой оси отдельно.
 // В других местах нашего файла настроек скорость перемещения указывается в мм/с, а ускорение - в мм/с2
 #define HOMING_FEEDRATE_XY (50*60)
 #define HOMING_FEEDRATE_Z  (4*60)
@@ -1498,8 +1515,8 @@
 #if ENABLED(NOZZLE_PARK_FEATURE)
   // Specify a park position as { X, Y, Z }
   #define NOZZLE_PARK_POINT { (X_MIN_POS + 10), (Y_MAX_POS - 10), 20 }
-  #define NOZZLE_PARK_XY_FEEDRATE 100   // X and Y axes feedrate in mm/s (also used for delta printers Z axis)
-  #define NOZZLE_PARK_Z_FEEDRATE 5      // Z axis feedrate in mm/s (not used for delta printers)
+  #define NOZZLE_PARK_XY_FEEDRATE 100   // (mm/s) X and Y axes feedrate (also used for delta Z axis)
+  #define NOZZLE_PARK_Z_FEEDRATE 5      // (mm/s) Z axis feedrate (not used for delta printers)
 #endif
 
 /**
@@ -2067,8 +2084,7 @@
 // @section extras
 
 // Increase the FAN PWM frequency. Removes the PWM noise but increases heating in the FET/Arduino
-// FAST_PWM_FAN only supported by 8 bit CPU
-// #define FAST_PWM_FAN
+//#define FAST_PWM_FAN
 
 // Use software PWM to drive the fan, as for the heaters. This uses a very low frequency
 // which is not as annoying as with the hardware PWM. On the other hand, if this frequency
@@ -2133,7 +2149,7 @@
 //#define RGB_LED
 //#define RGBW_LED
 
-#if ENABLED(RGB_LED) || ENABLED(RGBW_LED)
+#if EITHER(RGB_LED, RGBW_LED)
   #define RGB_LED_R_PIN 34
   #define RGB_LED_G_PIN 43
   #define RGB_LED_B_PIN 35
@@ -2162,7 +2178,7 @@
  *  - Change to green once print has finished
  *  - Turn off after the print has finished and the user has pushed a button
  */
-#if ENABLED(BLINKM) || ENABLED(RGB_LED) || ENABLED(RGBW_LED) || ENABLED(PCA9632) || ENABLED(PCA9533)|| ENABLED(NEOPIXEL_LED)
+#if ANY(BLINKM, RGB_LED, RGBW_LED, PCA9632, PCA9533, NEOPIXEL_LED)
   #define PRINTER_EVENT_LEDS
 #endif
 
