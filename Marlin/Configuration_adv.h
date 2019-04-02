@@ -43,18 +43,18 @@
 // Hephestos 2 24V heated bed upgrade kit.
 // https://store.bq.com/en/heated-bed-kit-hephestos2
 //
-//#define HEPHESTOS2_HEATED_BED_KIT
+// #define HEPHESTOS2_HEATED_BED_KIT
 #if ENABLED(HEPHESTOS2_HEATED_BED_KIT)
   #undef TEMP_SENSOR_BED
   #define TEMP_SENSOR_BED 70
   #define HEATER_BED_INVERTING true
-
 #endif
 
+#define HEATER_BED_INVERTING true
 // для RAMPS-FD очень важно а то неотключает питание с сопла
 #define HEATER_0_INVERTING true
 //  За одно и остальные что б не светились лампочки.
-#define HEATER_1_INVERTING false
+#define HEATER_1_INVERTING true
 #define HEATER_2_INVERTING true
 
 #if DISABLED(PIDTEMPBED)

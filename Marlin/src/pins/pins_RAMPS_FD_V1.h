@@ -42,7 +42,8 @@
 //
 // Servos
 //
-#define SERVO0_PIN          7
+// #define SERVO0_PIN          7
+#define SERVO0_PIN          8
 #define SERVO1_PIN          6
 #define SERVO2_PIN          5
 #define SERVO3_PIN          3
@@ -123,7 +124,9 @@
 #define HEATER_0_PIN        9
 #define HEATER_1_PIN       10
 #define HEATER_2_PIN       11
-#define HEATER_BED_PIN      8
+//#define HEATER_BED_PIN      8
+// свой mosfet
+#define HEATER_BED_PIN      7
 
 #ifndef FAN_PIN
   #define FAN_PIN          12
