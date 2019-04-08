@@ -50,7 +50,7 @@
   #define HEATER_BED_INVERTING true
 #endif
 
-#define HEATER_BED_INVERTING true
+// #define HEATER_BED_INVERTING true
 // для RAMPS-FD очень важно а то неотключает питание с сопла
 #define HEATER_0_INVERTING true
 //  За одно и остальные что б не светились лампочки.
